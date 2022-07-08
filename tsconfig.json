@@ -1,12 +1,13 @@
 {
     "exclude": [ "**/*.test.ts"],
     "compilerOptions": {
-        "target": "ES2019",
-        "module": "CommonJS",
+        "target": "ES6",
+        "module": "ES2015",
         "rootDir": "./src",
         "outDir": "./dist",
         "strict": true,
         "noImplicitAny": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "skipLibCheck": true
     }
 }
