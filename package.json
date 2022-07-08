@@ -4,7 +4,7 @@
   "description": "console app that scrapes movies and series off the soap2day website",
   "main": "index.js",
   "scripts": {
-    "test": "tsc -c ./jest.unit.json",
+    "test": "jest -c ./jest.unit.json",
     "dev": "nodemon ./src/index.ts",
     "build": "tsc --project ./tsconfig.json",
     "start": "node ./src/index.js"
