@@ -1,5 +1,5 @@
-node_modules/
-src/
-tests/
-jest.unit.json/
-tsconfig.json/
+node_modules
+src
+tests
+jest.unit.json
+tsconfig.json
