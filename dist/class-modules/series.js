@@ -1,7 +1,8 @@
-export default class Movie {
+export default class Series {
     constructor(title) {
         this.title = title;
-        this.type = "Movie";
+        this.type = "Series";
+        this.season = "";
         this.downloadList = [];
     }
     getDownloadList() {
@@ -9,5 +10,11 @@ export default class Movie {
     }
     setDownloadList(list) {
         this.downloadList.push({ name: list[0], url: list[1] });
+    }
+    getSeason() {
+        return this.season;
+    }
+    setSeason(season) {
+        this.season = season;
     }
 }
