@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "console app that scrapes movies and series off the soap2day website",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "jest -c ./jest.unit.json",
     "dev": "nodemon ./src/index.ts",
