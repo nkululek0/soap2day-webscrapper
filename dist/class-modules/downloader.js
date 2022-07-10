@@ -5,7 +5,7 @@ export default class Downloader {
         this.url = url;
         this.filename = filename;
     }
-    donwload(fileOutput) {
+    donwload(consoleOutput) {
         https.get(this.url, (response) => {
             let fileStream = fs.createWriteStream(`${this.filename}`);
             response.pipe(fileStream);
