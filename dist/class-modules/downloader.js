@@ -16,7 +16,8 @@ export default class Downloader {
                 response.pipe(fileStream);
                 let fileLength = Number(response.headers["content-length"]);
                 response.on("data", () => {
-                    logUpdate(`downloading: \n - ${consoleOutput}: ${((fileStream.bytesWritten / fileLength) * 100).toFixed(2)}%`);
+                    let writtenBytes = Number(fileStream.bytesWritten);
+                    logUpdate(`downloading: \n - ${consoleOutput}: ${((writtenBytes / fileLength) * 100).toFixed(2)}%`);
                 });
                 response.on("end", () => {
                     fileStream.close();
