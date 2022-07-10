@@ -14,7 +14,7 @@ export default class Downloader {
             if (!existsSync(`./downloads/${this.filename}`)) {
                 let fileStream = fs.createWriteStream(`./downloads/${this.filename}`);
                 response.pipe(fileStream);
-                const fileLength = Number(response.headers["content-length"]);
+                let fileLength = Number(response.headers["content-length"]);
                 response.on("data", () => {
                     logUpdate(`downloading: \n - ${consoleOutput}: ${((fileStream.bytesWritten / fileLength) * 100).toFixed(2)}%`);
                 });
