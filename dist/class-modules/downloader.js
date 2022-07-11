@@ -17,7 +17,8 @@ export default class Downloader {
                 let fileLength = Number(response.headers["content-length"]);
                 response.on("data", () => {
                     let writtenBytes = Number(fileStream.bytesWritten);
-                    logUpdate(`downloading: \n - ${consoleOutput}: ${((writtenBytes / fileLength) * 100).toFixed(2)}%`);
+                    let downloadStatus = this.userReadableFormat(fileLength, writtenBytes);
+                    logUpdate(`downloading: \n - ${consoleOutput}: ${downloadStatus}`);
                 });
                 response.on("end", () => {
                     fileStream.close();
@@ -28,5 +29,31 @@ export default class Downloader {
                 console.log("file already exists!");
             }
         });
+    }
+    userReadableFormat(totalBytes, writtenBytes) {
+        let fileSize = String(totalBytes);
+        let total;
+        let percentage = ((writtenBytes / totalBytes) * 100).toFixed(2);
+        if (totalBytes > 999999999) {
+            fileSize = fileSize.slice(0, 3);
+            total = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
+            return `${percentage} % of ${total} GB`;
+        }
+        if (totalBytes > 99999999) {
+            fileSize = fileSize.slice(0, 5);
+            total = `${fileSize[0]}${fileSize[1]}${fileSize[2]},${fileSize[3]}${fileSize[4]}`;
+            return `${percentage} % of ${total} MB`;
+        }
+        if (totalBytes > 9999999) {
+            fileSize = fileSize.slice(0, 4);
+            total = `${fileSize[0]}${fileSize[1]},${fileSize[2]}${fileSize[3]}`;
+            return `${percentage} % of ${total} MB`;
+        }
+        if (totalBytes > 999999) {
+            fileSize = fileSize.slice(0, 3);
+            total = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
+            return `${percentage} % of ${total} MB`;
+        }
+        return `${percentage} %`;
     }
 }
