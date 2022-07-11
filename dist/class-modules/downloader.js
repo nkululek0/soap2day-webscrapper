@@ -32,27 +32,26 @@ export default class Downloader {
     }
     userReadableFormat(totalBytes, writtenBytes) {
         let fileSize = String(totalBytes);
-        let total;
         let percentage = ((writtenBytes / totalBytes) * 100).toFixed(2);
         if (totalBytes > 999999999) {
             fileSize = fileSize.slice(0, 3);
-            total = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
-            return `${percentage} % of ${total} GB`;
+            fileSize = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
+            return `${percentage} % of ${fileSize} GB`;
         }
         if (totalBytes > 99999999) {
             fileSize = fileSize.slice(0, 5);
-            total = `${fileSize[0]}${fileSize[1]}${fileSize[2]},${fileSize[3]}${fileSize[4]}`;
-            return `${percentage} % of ${total} MB`;
+            fileSize = `${fileSize[0]}${fileSize[1]}${fileSize[2]},${fileSize[3]}${fileSize[4]}`;
+            return `${percentage} % of ${fileSize} MB`;
         }
         if (totalBytes > 9999999) {
             fileSize = fileSize.slice(0, 4);
-            total = `${fileSize[0]}${fileSize[1]},${fileSize[2]}${fileSize[3]}`;
-            return `${percentage} % of ${total} MB`;
+            fileSize = `${fileSize[0]}${fileSize[1]},${fileSize[2]}${fileSize[3]}`;
+            return `${percentage} % of ${fileSize} MB`;
         }
         if (totalBytes > 999999) {
             fileSize = fileSize.slice(0, 3);
-            total = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
-            return `${percentage} % of ${total} MB`;
+            fileSize = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
+            return `${percentage} % of ${fileSize} MB`;
         }
         return `${percentage} %`;
     }
