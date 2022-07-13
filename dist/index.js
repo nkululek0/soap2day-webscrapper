@@ -9,27 +9,58 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import puppeteer from "puppeteer-extra";
 import stealthPlugin from "puppeteer-extra-plugin-stealth";
+import readline from "readline";
+import Movie from "./class-modules/movie.js";
+import Series from "./class-modules/series.js";
 puppeteer.use(stealthPlugin());
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const browser = yield puppeteer.launch({ headless: false });
-    const tab = yield browser.newPage();
-    yield tab.goto("https://soap2day.to/enter.html");
-    yield tab.waitForTimeout(3000);
-    yield tab.click("#btnhome");
-    yield tab.waitForNavigation();
     let tabContent = [];
-    search("jurassic", "Series");
-    function search(searchInput, type) {
+    let mainObject;
+    const consolePrompt = readline.createInterface({ input: process.stdin, output: process.stdout });
+    let options;
+    (function (options) {
+        options[options["movie"] = 0] = "movie";
+        options[options["series"] = 1] = "series";
+        options[options["season"] = 2] = "season";
+    })(options || (options = {}));
+    ;
+    let userInput = 0;
+    consolePrompt.question("1.Movie\n2.Series\nselect option: ", (answer) => {
+        if (answer === "1") {
+            userInput = options.movie;
+        }
+        else if (answer === "2") {
+            userInput = options.series;
+        }
+        else {
+            console.log("invalid input");
+        }
+        consolePrompt.question("search: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
+            const browser = yield puppeteer.launch({ headless: false });
+            const tab = yield browser.newPage();
+            yield tab.goto("https://soap2day.to/enter.html");
+            yield tab.waitForTimeout(3000);
+            yield tab.click("#btnhome");
+            yield tab.waitForNavigation();
+            if (userInput === options.movie) {
+                mainObject = new Movie(answer);
+            }
+            else if (userInput === options.series) {
+                mainObject = new Series(answer);
+            }
+            yield search(mainObject.title, tab);
+            yield setTabContent(mainObject.type, tab);
+            console.log(tabContent);
+        }));
+    });
+    function search(searchInput, tab) {
         return __awaiter(this, void 0, void 0, function* () {
             yield tab.type("#txtSearch", searchInput);
             yield tab.click("#btnSearch");
-            yield tab.waitForTimeout(3000).then(() => __awaiter(this, void 0, void 0, function* () {
-                setTabContent(type);
-            }));
-            return "";
+            yield tab.waitForSelector(".no-padding");
         });
     }
-    function setTabContent(type) {
+    function setTabContent(type, tab) {
         return __awaiter(this, void 0, void 0, function* () {
             const typeSection = yield tab.$$(".panel-body");
             if (type === "Movie") {
@@ -54,7 +85,9 @@ puppeteer.use(stealthPlugin());
             }
         });
     }
-    // function getTabContent() {}
+    function getTabContent() {
+        return tabContent;
+    }
     function formatTabContent(match, selector) {
         return __awaiter(this, void 0, void 0, function* () {
             if (match === "no match") {
@@ -74,5 +107,4 @@ puppeteer.use(stealthPlugin());
             }
         });
     }
-    // await tab.close();
 }))();
