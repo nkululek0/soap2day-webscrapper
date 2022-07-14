@@ -37,7 +37,7 @@ puppeteer.use(stealthPlugin());
             console.log("invalid input");
         }
         consolePrompt.question("Search: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
-            const browser = yield puppeteer.launch();
+            const browser = yield puppeteer.launch({ headless: false });
             const tab = yield browser.newPage();
             yield tab.goto("https://soap2day.to/enter.html");
             yield tab.waitForTimeout(1500);
@@ -50,7 +50,7 @@ puppeteer.use(stealthPlugin());
                 mainObject = new Series(answer);
             }
             yield search(mainObject.title, tab);
-            yield setTabContent(mainObject.type, tab);
+            yield setTabContent(mainObject.resourceType, tab);
             yield tab.waitForTimeout(1000).then(() => {
                 console.log("Donwload Options:");
                 tabContent.map((item, index) => {
@@ -64,9 +64,11 @@ puppeteer.use(stealthPlugin());
                         let downLoadSrc = yield tab.$eval("video", (video) => {
                             return video.src;
                         });
-                        const downloader = new Downloader(downLoadSrc, `${tabContent[numAnswer].name}.mp4`);
-                        downloader.donwload(tabContent[numAnswer].name);
-                        yield browser.close();
+                        console.log(downLoadSrc);
+                        mainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
+                        const downloader = new Downloader(mainObject.getDownloadList()[0].url, `${mainObject.getDownloadList()[0].name}.mp4`);
+                        downloader.donwload(mainObject.getDownloadList()[0].name);
+                        // await browser.close();
                     }
                 }));
             });
