@@ -26,7 +26,7 @@ puppeteer.use(stealthPlugin());
     })(options || (options = {}));
     ;
     let userInput = 0;
-    consolePrompt.question("1.Movie\n2.Series\nSelect Option: ", (answer) => {
+    consolePrompt.question("1. Movie\n2. Series\nSelect Option: ", (answer) => {
         if (answer === "1") {
             userInput = options.movie;
         }
@@ -64,11 +64,23 @@ puppeteer.use(stealthPlugin());
                         let downLoadSrc = yield tab.$eval("video", (video) => {
                             return video.src;
                         });
-                        console.log(downLoadSrc);
                         mainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
                         const downloader = new Downloader(mainObject.getDownloadList()[0].url, `${mainObject.getDownloadList()[0].name}.mp4`);
                         downloader.donwload(mainObject.getDownloadList()[0].name);
-                        // await browser.close();
+                        yield browser.close();
+                    }
+                    else if (userInput === options.series) {
+                        yield tab.goto(tabContent[numAnswer].url);
+                        let seasonList = yield tab.$$("div.alert-info-ex");
+                        seasonList.map((seasonOption, index) => {
+                            console.log(`${++index}. Season ${index}`);
+                        });
+                        consolePrompt.question("Select Season: ", (season) => __awaiter(void 0, void 0, void 0, function* () {
+                            let donwloadPage = yield browser.newPage();
+                            let numSeason = Number(season);
+                            mainObject.setSeason(`Season ${numSeason}`);
+                            yield setTabContent(`Season ${numSeason}`, tab);
+                        }));
                     }
                 }));
             });
@@ -83,28 +95,30 @@ puppeteer.use(stealthPlugin());
         });
     }
     // populates tabContent based on the content of the current page and type
-    function setTabContent(type, tab) {
+    function setTabContent(resourceType, tab) {
         return __awaiter(this, void 0, void 0, function* () {
-            const typeSection = yield tab.$$(".panel-body");
-            if (type === "Movie") {
-                let exits = yield typeSection[0].$(".no-padding a");
+            let resourceTypeSection = yield tab.$$("div.panel-body");
+            if (resourceType === "Movie") {
+                let exits = yield resourceTypeSection[0].$(".no-padding a");
                 if (exits === null) {
                     formatTabContent("no match", null);
                 }
                 else {
-                    formatTabContent("match", typeSection[0]);
+                    formatTabContent("match", resourceTypeSection[0]);
                 }
             }
-            if (type === "Series") {
-                let exits = yield typeSection[1].$(".no-padding a");
+            else if (resourceType === "Series") {
+                let exits = yield resourceTypeSection[1].$(".no-padding a");
                 if (exits == null) {
                     formatTabContent("no match", null);
                 }
                 else {
-                    formatTabContent("match", typeSection[1]);
+                    formatTabContent("match", resourceTypeSection[1]);
                 }
             }
-            if (type === "Season") {
+            else if (resourceType.includes("Season")) {
+                resourceTypeSection = (yield tab.$$("div.alert-info-ex"));
+                formatTabContent("match-season", resourceTypeSection[Number(resourceType.split(" ").pop())]);
             }
         });
     }
@@ -115,15 +129,26 @@ puppeteer.use(stealthPlugin());
                 tabContent.push({ name: "no match found", url: "" });
             }
             else {
-                selector = selector;
-                let content = yield selector.$$eval(".no-padding h5", (links) => {
-                    return links.map((link) => {
-                        let mediaLink = link.querySelector("a");
-                        return [link.textContent, mediaLink.href];
+                if (match === "match") {
+                    yield format(".no-padding h5");
+                }
+                else if (match === "match-season") {
+                    yield format(".myp1");
+                }
+            }
+            function format(anchorSection) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    selector = selector;
+                    let content = yield selector.$$eval(anchorSection, (anchors) => {
+                        return anchors.map((anchor) => {
+                            let mediaAnchor = anchor.querySelector("a");
+                            return [anchor.textContent, mediaAnchor.href];
+                        });
                     });
-                });
-                content.map((item) => {
-                    tabContent.push({ name: item[0], url: item[1] });
+                    content.map((item) => {
+                        tabContent.push({ name: item[0], url: item[1] });
+                    });
+                    console.log(tabContent);
                 });
             }
         });
