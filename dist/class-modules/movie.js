@@ -1,7 +1,7 @@
 export default class Movie {
     constructor(title) {
         this.title = title;
-        this.type = "Movie";
+        this.resourceType = "Movie";
         this.downloadList = [];
     }
     getDownloadList() {

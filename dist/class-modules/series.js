@@ -1,7 +1,7 @@
 export default class Series {
     constructor(title) {
         this.title = title;
-        this.type = "Series";
+        this.resourceType = "Series";
         this.season = "";
         this.downloadList = [];
     }
