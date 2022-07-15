@@ -94,15 +94,13 @@ puppeteer.use(stealthPlugin());
                                         consolePrompt.question("Stop Download at Episode: ", (answer) => {
                                             let endEpisode = Number(answer);
                                             consolePrompt.question("Exclude Episodes: ", (answer) => {
-                                                tabContent = tabContent.slice(startEpisode, endEpisode);
+                                                tabContent = tabContent.slice(startEpisode, endEpisode - startEpisode);
                                                 let excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
                                                 tabContent.map((episode, index) => {
                                                     if (!excludeEpisodes.includes(index)) {
-                                                        console.log(++index);
                                                         mainObject.setDownloadList([episode.name, episode.url]);
                                                     }
                                                 });
-                                                console.log(mainObject.getDownloadList());
                                             });
                                         });
                                     });
