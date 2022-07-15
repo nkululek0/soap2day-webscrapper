@@ -86,27 +86,26 @@ puppeteer.use(stealthPlugin());
                                 });
                             });
                             consolePrompt.question("\n1.Download All | 2.Select: ", (downloadOption) => {
-                                let startEpisode = -1;
-                                let endEpisode = -1;
-                                let excludeEpisodes = [];
                                 if (downloadOption === "1") {
                                 }
                                 else if (downloadOption === "2") {
                                     consolePrompt.question("Download From Episode: ", (answer) => {
-                                        startEpisode = Number(answer);
+                                        let startEpisode = Number(answer) - 1;
                                         consolePrompt.question("Stop Download at Episode: ", (answer) => {
-                                            endEpisode = Number(answer);
-                                            consolePrompt.question("Episodes to Exclude: ", (answer) => {
-                                                excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
+                                            let endEpisode = Number(answer);
+                                            consolePrompt.question("Exclude Episodes: ", (answer) => {
+                                                tabContent = tabContent.slice(startEpisode, endEpisode);
+                                                let excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
+                                                tabContent.map((episode, index) => {
+                                                    if (!excludeEpisodes.includes(index)) {
+                                                        console.log(++index);
+                                                        mainObject.setDownloadList([episode.name, episode.url]);
+                                                    }
+                                                });
+                                                console.log(mainObject.getDownloadList());
                                             });
                                         });
                                     });
-                                    tabContent.map((episode, index) => {
-                                        if (excludeEpisodes.some((exEpisode) => exEpisode !== index)) {
-                                            mainObject.setDownloadList([episode.name, episode.url]);
-                                        }
-                                    });
-                                    console.log(mainObject.getDownloadList());
                                 }
                             });
                         }));
