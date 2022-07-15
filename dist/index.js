@@ -26,7 +26,7 @@ puppeteer.use(stealthPlugin());
     })(options || (options = {}));
     ;
     let userInput = 0;
-    consolePrompt.question("1. Movie\n2. Series\nSelect Option: ", (answer) => {
+    consolePrompt.question("1.Movie\n2.Series\nSelect Option: ", (answer) => {
         if (answer === "1") {
             userInput = options.movie;
         }
@@ -36,7 +36,7 @@ puppeteer.use(stealthPlugin());
         else {
             console.log("invalid input");
         }
-        consolePrompt.question("Search: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
+        consolePrompt.question("\nSearch: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
             const browser = yield puppeteer.launch({ headless: false });
             const tab = yield browser.newPage();
             yield tab.goto("https://soap2day.to/enter.html");
@@ -52,11 +52,11 @@ puppeteer.use(stealthPlugin());
             yield search(mainObject.title, tab);
             yield setTabContent(mainObject.resourceType, tab);
             yield tab.waitForTimeout(1000).then(() => {
-                console.log("Donwload Options:");
+                console.log("\nDonwload Options:");
                 tabContent.map((item, index) => {
-                    console.log(`${++index}. ${item.name}`);
+                    console.log(`${++index}.${item.name}`);
                 });
-                consolePrompt.question("Select Option: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
+                consolePrompt.question("\nSelect Option: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
                     let numAnswer = Number(answer) - 1;
                     if (userInput === options.movie) {
                         yield tab.goto(tabContent[numAnswer].url);
@@ -73,13 +73,42 @@ puppeteer.use(stealthPlugin());
                         yield tab.goto(tabContent[numAnswer].url);
                         let seasonList = yield tab.$$("div.alert-info-ex");
                         seasonList.map((seasonOption, index) => {
-                            console.log(`${++index}. Season ${index}`);
+                            console.log(`${++index}.Season ${index}`);
                         });
-                        consolePrompt.question("Select Season: ", (season) => __awaiter(void 0, void 0, void 0, function* () {
+                        consolePrompt.question("\nSelect Season: ", (season) => __awaiter(void 0, void 0, void 0, function* () {
                             let donwloadPage = yield browser.newPage();
-                            let numSeason = Number(season);
-                            mainObject.setSeason(`Season ${numSeason}`);
-                            yield setTabContent(`Season ${numSeason}`, tab);
+                            mainObject.setSeason(`Season ${season}`);
+                            yield setTabContent(`Season ${season}`, tab);
+                            yield donwloadPage.waitForTimeout(1000).then(() => {
+                                tabContent.reverse();
+                                tabContent.map((episode) => {
+                                    console.log(episode.name);
+                                });
+                            });
+                            consolePrompt.question("\n1.Download All | 2.Select: ", (downloadOption) => {
+                                let startEpisode = -1;
+                                let endEpisode = -1;
+                                let excludeEpisodes = [];
+                                if (downloadOption === "1") {
+                                }
+                                else if (downloadOption === "2") {
+                                    consolePrompt.question("Download From Episode: ", (answer) => {
+                                        startEpisode = Number(answer);
+                                        consolePrompt.question("Stop Download at Episode: ", (answer) => {
+                                            endEpisode = Number(answer);
+                                            consolePrompt.question("Episodes to Exclude: ", (answer) => {
+                                                excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
+                                            });
+                                        });
+                                    });
+                                    tabContent.map((episode, index) => {
+                                        if (excludeEpisodes.some((exEpisode) => exEpisode !== index)) {
+                                            mainObject.setDownloadList([episode.name, episode.url]);
+                                        }
+                                    });
+                                    console.log(mainObject.getDownloadList());
+                                }
+                            });
                         }));
                     }
                 }));
@@ -97,28 +126,30 @@ puppeteer.use(stealthPlugin());
     // populates tabContent based on the content of the current page and type
     function setTabContent(resourceType, tab) {
         return __awaiter(this, void 0, void 0, function* () {
+            tabContent = [];
             let resourceTypeSection = yield tab.$$("div.panel-body");
             if (resourceType === "Movie") {
                 let exits = yield resourceTypeSection[0].$(".no-padding a");
                 if (exits === null) {
-                    formatTabContent("no match", null);
+                    yield formatTabContent("no match", null);
                 }
                 else {
-                    formatTabContent("match", resourceTypeSection[0]);
+                    yield formatTabContent("match", resourceTypeSection[0]);
                 }
             }
             else if (resourceType === "Series") {
                 let exits = yield resourceTypeSection[1].$(".no-padding a");
                 if (exits == null) {
-                    formatTabContent("no match", null);
+                    yield formatTabContent("no match", null);
                 }
                 else {
-                    formatTabContent("match", resourceTypeSection[1]);
+                    yield formatTabContent("match", resourceTypeSection[1]);
                 }
             }
             else if (resourceType.includes("Season")) {
                 resourceTypeSection = (yield tab.$$("div.alert-info-ex"));
-                formatTabContent("match-season", resourceTypeSection[Number(resourceType.split(" ").pop())]);
+                let resourceIndex = Number(resourceType.split(" ")[1]) - 1;
+                yield formatTabContent("match-season", resourceTypeSection[resourceIndex]);
             }
         });
     }
@@ -148,7 +179,6 @@ puppeteer.use(stealthPlugin());
                     content.map((item) => {
                         tabContent.push({ name: item[0], url: item[1] });
                     });
-                    console.log(tabContent);
                 });
             }
         });
