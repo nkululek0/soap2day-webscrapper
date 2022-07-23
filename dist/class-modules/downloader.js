@@ -2,17 +2,18 @@ import https from "https";
 import fs, { existsSync, mkdirSync } from "fs";
 import logUpdate from "log-update";
 export default class Downloader {
-    constructor(url, filename) {
+    constructor(url, fileName) {
         this.url = url;
-        this.filename = filename;
+        this.fileName = fileName;
     }
-    donwload(consoleOutput) {
+    download(consoleOutput) {
         https.get(this.url, (response) => {
             if (!existsSync("./downloads")) {
                 mkdirSync("./downloads");
             }
-            if (!existsSync(`./downloads/${this.filename}`)) {
-                let fileStream = fs.createWriteStream(`./downloads/${this.filename}`);
+            let formattedFileName = this.fileNameFormat(this.fileName);
+            if (!existsSync(`./downloads/${formattedFileName}`)) {
+                let fileStream = fs.createWriteStream(`./downloads/${formattedFileName}`);
                 response.pipe(fileStream);
                 let fileLength = Number(response.headers["content-length"]);
                 response.on("data", () => {
@@ -54,5 +55,10 @@ export default class Downloader {
             return `${percentage} % of ${fileSize} MB`;
         }
         return `${percentage} %`;
+    }
+    fileNameFormat(file) {
+        return file.split(" ").map((word) => {
+            word.replace(word[0], word[0].toLowerCase());
+        }).join("-");
     }
 }
