@@ -16,7 +16,7 @@ import Downloader from "./class-modules/downloader.js";
 puppeteer.use(stealthPlugin());
 (() => __awaiter(void 0, void 0, void 0, function* () {
     let tabContent = [];
-    let mainObject;
+    let MainObject;
     const consolePrompt = readline.createInterface({ input: process.stdin, output: process.stdout });
     let options;
     (function (options) {
@@ -44,13 +44,13 @@ puppeteer.use(stealthPlugin());
             yield tab.click("#btnhome");
             yield tab.waitForNavigation();
             if (userInput === options.movie) {
-                mainObject = new Movie(answer);
+                MainObject = new Movie(answer);
             }
             else if (userInput === options.series) {
-                mainObject = new Series(answer);
+                MainObject = new Series(answer);
             }
-            yield search(mainObject.title, tab);
-            yield setTabContent(mainObject.resourceType, tab);
+            yield search(MainObject.title, tab);
+            yield setTabContent(MainObject.resourceType, tab);
             yield tab.waitForTimeout(1000).then(() => {
                 console.log("\nDonwload Options:");
                 tabContent.map((item, index) => {
@@ -64,9 +64,9 @@ puppeteer.use(stealthPlugin());
                         let downLoadSrc = yield tab.$eval("video", (video) => {
                             return video.src;
                         });
-                        mainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
-                        const downloader = new Downloader(mainObject.getDownloadList()[0].url, `${mainObject.getDownloadList()[0].name}.mp4`);
-                        downloader.donwload(mainObject.getDownloadList()[0].name);
+                        MainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
+                        const MovieDownloader = new Downloader(MainObject.getDownloadList()[0].url, `${MainObject.getDownloadList()[0].name}.mp4`);
+                        MovieDownloader.download(MainObject.getDownloadList()[0].name);
                         yield browser.close();
                     }
                     else if (userInput === options.series) {
@@ -77,7 +77,7 @@ puppeteer.use(stealthPlugin());
                         });
                         consolePrompt.question("\nSelect Season: ", (season) => __awaiter(void 0, void 0, void 0, function* () {
                             let donwloadPage = yield browser.newPage();
-                            mainObject.setSeason(`Season ${season}`);
+                            MainObject.setSeason(`Season ${season}`);
                             yield setTabContent(`Season ${season}`, tab);
                             yield donwloadPage.waitForTimeout(1000).then(() => {
                                 tabContent.reverse();
@@ -94,13 +94,17 @@ puppeteer.use(stealthPlugin());
                                         consolePrompt.question("Stop Download at Episode: ", (answer) => {
                                             let endEpisode = Number(answer);
                                             consolePrompt.question("Exclude Episodes: ", (answer) => {
-                                                tabContent = tabContent.slice(startEpisode, endEpisode - startEpisode);
+                                                tabContent = tabContent.slice(startEpisode, endEpisode);
                                                 let excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
                                                 tabContent.map((episode, index) => {
                                                     if (!excludeEpisodes.includes(index)) {
-                                                        mainObject.setDownloadList([episode.name, episode.url]);
+                                                        MainObject.setDownloadList([episode.name, episode.url]);
                                                     }
                                                 });
+                                            });
+                                            MainObject.getDownloadList().map((episode) => {
+                                                let SeriesDownloader = new Downloader(episode.url, episode.name.slice(2));
+                                                SeriesDownloader.download(`${MainObject.title}, ${MainObject.getSeason()}, ${episode.name.slice(0, 1)}`);
                                             });
                                         });
                                     });
