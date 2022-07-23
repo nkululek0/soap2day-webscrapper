@@ -95,17 +95,19 @@ puppeteer.use(stealthPlugin());
                                             let endEpisode = Number(answer);
                                             consolePrompt.question("Exclude Episodes: ", (answer) => {
                                                 tabContent = tabContent.slice(startEpisode, endEpisode);
-                                                let excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
+                                                let excludeEpisodes = answer.split(", ").map((number) => Number(number));
                                                 tabContent.map((episode, index) => {
                                                     if (!excludeEpisodes.includes(index)) {
                                                         MainObject.setDownloadList([episode.name, episode.url]);
                                                     }
                                                 });
+                                                console.log(MainObject.getDownloadList());
                                             });
-                                            MainObject.getDownloadList().map((episode) => {
-                                                let SeriesDownloader = new Downloader(episode.url, episode.name.slice(2));
-                                                SeriesDownloader.download(`${MainObject.title}, ${MainObject.getSeason()}, ${episode.name.slice(0, 1)}`);
-                                            });
+                                            MainObject.getDownloadList().map((episode) => __awaiter(void 0, void 0, void 0, function* () {
+                                                yield donwloadPage.goto(episode.url);
+                                                // let SeriesDownloader: Downloader = new Downloader(episode.url, episode.name.slice(2));
+                                                // SeriesDownloader.download(`${ MainObject.title }, ${ (MainObject as Series).getSeason() }, ${ episode.name.slice(0, 1) }`);
+                                            }));
                                         });
                                     });
                                 }
