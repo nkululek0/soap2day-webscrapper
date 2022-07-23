@@ -57,11 +57,11 @@ puppeteer.use(stealthPlugin());
                     console.log(`${++index}.${item.name}`);
                 });
                 consolePrompt.question("\nSelect Option: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
-                    let numAnswer = Number(answer) - 1;
+                    const numAnswer = Number(answer) - 1;
                     if (userInput === options.movie) {
                         yield tab.goto(tabContent[numAnswer].url);
                         yield tab.waitForSelector("video");
-                        let downLoadSrc = yield tab.$eval("video", (video) => {
+                        const downLoadSrc = yield tab.$eval("video", (video) => {
                             return video.src;
                         });
                         MainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
@@ -71,15 +71,14 @@ puppeteer.use(stealthPlugin());
                     }
                     else if (userInput === options.series) {
                         yield tab.goto(tabContent[numAnswer].url);
-                        let seasonList = yield tab.$$("div.alert-info-ex");
+                        const seasonList = yield tab.$$("div.alert-info-ex");
                         seasonList.map((seasonOption, index) => {
                             console.log(`${++index}.Season ${index}`);
                         });
                         consolePrompt.question("\nSelect Season: ", (season) => __awaiter(void 0, void 0, void 0, function* () {
-                            let donwloadPage = yield browser.newPage();
                             MainObject.setSeason(`Season ${season}`);
                             yield setTabContent(`Season ${season}`, tab);
-                            yield donwloadPage.waitForTimeout(1000).then(() => {
+                            yield tab.waitForTimeout(1000).then(() => {
                                 tabContent.reverse();
                                 tabContent.map((episode) => {
                                     console.log(episode.name);
@@ -90,24 +89,27 @@ puppeteer.use(stealthPlugin());
                                 }
                                 else if (downloadOption === "2") {
                                     consolePrompt.question("Download From Episode: ", (answer) => {
-                                        let startEpisode = Number(answer) - 1;
+                                        const startEpisode = Number(answer) - 1;
                                         consolePrompt.question("Stop Download at Episode: ", (answer) => {
-                                            let endEpisode = Number(answer);
+                                            const endEpisode = Number(answer);
                                             consolePrompt.question("Exclude Episodes: ", (answer) => {
                                                 tabContent = tabContent.slice(startEpisode, endEpisode);
-                                                let excludeEpisodes = answer.split(", ").map((number) => Number(number));
+                                                const excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
                                                 tabContent.map((episode, index) => {
                                                     if (!excludeEpisodes.includes(index)) {
                                                         MainObject.setDownloadList([episode.name, episode.url]);
                                                     }
                                                 });
-                                                console.log(MainObject.getDownloadList());
+                                                MainObject.getDownloadList().map((episode) => __awaiter(void 0, void 0, void 0, function* () {
+                                                    yield tab.goto(episode.url);
+                                                    yield tab.waitForSelector("video");
+                                                    const downLoadSrc = yield tab.$eval("video", (video) => {
+                                                        return video.src;
+                                                    });
+                                                    const SeriesDownloader = new Downloader(downLoadSrc, episode.name);
+                                                    SeriesDownloader.download(`${MainObject.title}, ${MainObject.getSeason()}, ${episode.name.slice(0, 1)}`);
+                                                }));
                                             });
-                                            MainObject.getDownloadList().map((episode) => __awaiter(void 0, void 0, void 0, function* () {
-                                                yield donwloadPage.goto(episode.url);
-                                                // let SeriesDownloader: Downloader = new Downloader(episode.url, episode.name.slice(2));
-                                                // SeriesDownloader.download(`${ MainObject.title }, ${ (MainObject as Series).getSeason() }, ${ episode.name.slice(0, 1) }`);
-                                            }));
                                         });
                                     });
                                 }
@@ -132,8 +134,8 @@ puppeteer.use(stealthPlugin());
             tabContent = [];
             let resourceTypeSection = yield tab.$$("div.panel-body");
             if (resourceType === "Movie") {
-                let exits = yield resourceTypeSection[0].$(".no-padding a");
-                if (exits === null) {
+                const isAnchorElement = yield resourceTypeSection[0].$(".no-padding a");
+                if (isAnchorElement === null) {
                     yield formatTabContent("no match", null);
                 }
                 else {
@@ -141,8 +143,8 @@ puppeteer.use(stealthPlugin());
                 }
             }
             else if (resourceType === "Series") {
-                let exits = yield resourceTypeSection[1].$(".no-padding a");
-                if (exits == null) {
+                const isAnchorElement = yield resourceTypeSection[1].$(".no-padding a");
+                if (isAnchorElement == null) {
                     yield formatTabContent("no match", null);
                 }
                 else {
@@ -151,7 +153,7 @@ puppeteer.use(stealthPlugin());
             }
             else if (resourceType.includes("Season")) {
                 resourceTypeSection = (yield tab.$$("div.alert-info-ex"));
-                let resourceIndex = Number(resourceType.split(" ")[1]) - 1;
+                const resourceIndex = Number(resourceType.split(" ")[1]) - 1;
                 yield formatTabContent("match-season", resourceTypeSection[resourceIndex]);
             }
         });
@@ -173,7 +175,7 @@ puppeteer.use(stealthPlugin());
             function format(anchorSection) {
                 return __awaiter(this, void 0, void 0, function* () {
                     selector = selector;
-                    let content = yield selector.$$eval(anchorSection, (anchors) => {
+                    const content = yield selector.$$eval(anchorSection, (anchors) => {
                         return anchors.map((anchor) => {
                             let mediaAnchor = anchor.querySelector("a");
                             return [anchor.textContent, mediaAnchor.href];
