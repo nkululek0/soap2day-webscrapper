@@ -4,3 +4,4 @@ tests
 jest.unit.json
 tsconfig.json
 downloads
+.vscode
