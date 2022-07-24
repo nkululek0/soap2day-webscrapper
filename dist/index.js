@@ -59,6 +59,7 @@ puppeteer.use(stealthPlugin());
                 consolePrompt.question("\nSelect Option: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
                     const numAnswer = Number(answer) - 1;
                     if (userInput === options.movie) {
+                        MainObject.title = tabContent[numAnswer].name;
                         yield tab.goto(tabContent[numAnswer].url);
                         yield tab.waitForSelector("video");
                         const downLoadSrc = yield tab.$eval("video", (video) => {
@@ -70,6 +71,7 @@ puppeteer.use(stealthPlugin());
                         yield browser.close();
                     }
                     else if (userInput === options.series) {
+                        MainObject.title = tabContent[numAnswer].name.split(" ").slice(0, -1).join(" ");
                         yield tab.goto(tabContent[numAnswer].url);
                         const seasonList = yield tab.$$("div.alert-info-ex");
                         seasonList.map((seasonOption, index) => {
@@ -101,13 +103,20 @@ puppeteer.use(stealthPlugin());
                                                     }
                                                 });
                                                 MainObject.getDownloadList().map((episode) => __awaiter(void 0, void 0, void 0, function* () {
-                                                    yield tab.goto(episode.url);
-                                                    yield tab.waitForSelector("video");
-                                                    const downLoadSrc = yield tab.$eval("video", (video) => {
+                                                    const downloadPage = yield browser.newPage();
+                                                    yield downloadPage.goto(episode.url);
+                                                    yield downloadPage.waitForSelector("video");
+                                                    const downLoadSrc = yield downloadPage.$eval("video", (video) => {
                                                         return video.src;
                                                     });
-                                                    const SeriesDownloader = new Downloader(downLoadSrc, episode.name);
-                                                    SeriesDownloader.download(`${MainObject.title}, ${MainObject.getSeason()}, ${episode.name.slice(0, 1)}`);
+                                                    const isValidUrl = downLoadSrc.includes("s2dmax");
+                                                    if (isValidUrl) {
+                                                        const SeriesDownloader = new Downloader(downLoadSrc, `${episode.name}.mp4`);
+                                                        SeriesDownloader.download(`${MainObject.title}, ${MainObject.getSeason()}, Episode ${episode.name.slice(0, episode.name.indexOf("."))}`);
+                                                    }
+                                                    else {
+                                                        console.log("no download url available!");
+                                                    }
                                                 }));
                                             });
                                         });
@@ -153,6 +162,7 @@ puppeteer.use(stealthPlugin());
             }
             else if (resourceType.includes("Season")) {
                 resourceTypeSection = (yield tab.$$("div.alert-info-ex"));
+                resourceTypeSection.reverse();
                 const resourceIndex = Number(resourceType.split(" ")[1]) - 1;
                 yield formatTabContent("match-season", resourceTypeSection[resourceIndex]);
             }
