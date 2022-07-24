@@ -58,7 +58,7 @@ export default class Downloader {
     }
     fileNameFormat(file) {
         return file.split(" ").map((word) => {
-            word.replace(word[0], word[0].toLowerCase());
+            return word.replace(word[0], word[0].toLowerCase());
         }).join("-");
     }
 }
