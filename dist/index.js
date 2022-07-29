@@ -37,7 +37,7 @@ puppeteer.use(stealthPlugin());
             console.log("invalid input");
         }
         consolePrompt.question("\nSearch: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
-            const browser = yield puppeteer.launch({ headless: false });
+            const browser = yield puppeteer.launch({ headless: false, executablePath: "/usr/bin/google-chrome" });
             const tab = yield browser.newPage();
             yield tab.goto("https://soap2day.to/enter.html");
             yield tab.waitForTimeout(1500);
@@ -65,10 +65,16 @@ puppeteer.use(stealthPlugin());
                         const downLoadSrc = yield tab.$eval("video", (video) => {
                             return video.src;
                         });
-                        MainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
-                        const MovieDownloader = new Downloader(MainObject.getDownloadList()[0].url, `${MainObject.getDownloadList()[0].name}.mp4`);
-                        MovieDownloader.download(MainObject.getDownloadList()[0].name);
-                        yield browser.close();
+                        const isValidUrl = downLoadSrc.includes("s2dmax");
+                        if (isValidUrl) {
+                            MainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
+                            const MovieDownloader = new Downloader(MainObject.getDownloadList()[0].url, `${MainObject.getDownloadList()[0].name}.mp4`);
+                            MovieDownloader.download(MainObject.getDownloadList()[0].name);
+                        }
+                        else {
+                            console.log("no download url available!");
+                        }
+                        // await browser.close();
                     }
                     else if (userInput === options.series) {
                         MainObject.title = tabContent[numAnswer].name.split(" ").slice(0, -1).join(" ");
