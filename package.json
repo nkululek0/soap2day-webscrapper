@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest -c ./jest.unit.json",
     "dev": "nodemon ./src/index.ts",
-    "build": "tsc --project ./tsconfig.json",
+    "build": "tsc -w --project ./tsconfig.json",
     "start": "node ./src/index.js"
   },
   "repository": {
