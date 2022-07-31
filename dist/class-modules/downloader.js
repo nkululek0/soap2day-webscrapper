@@ -10,10 +10,10 @@ export default class downloader {
         if (!existsSync("./download")) {
             mkdirSync("./download");
         }
-        const FormatedFilename = this.formatFilename(this.filename);
-        if (!existsSync(`./download/${FormatedFilename}`)) {
+        const FormattedFilename = this.formatFilename(this.filename);
+        if (!existsSync(`./download/${FormattedFilename}`)) {
             https.get(this.url.href, (res) => {
-                const FileStream = fs.createWriteStream(`./download/${FormatedFilename}`);
+                const FileStream = fs.createWriteStream(`./download/${FormattedFilename}`);
                 res.pipe(FileStream);
                 const FileSize = Number(res.headers["content-length"]);
                 res.on("data", () => {
@@ -28,7 +28,7 @@ export default class downloader {
             });
         }
         else {
-            console.log(`${FormatedFilename} already exists!`);
+            console.log(`${FormattedFilename} already exists!`);
         }
     }
     userReadableFormat(totalBytes, writtenBytes) {
