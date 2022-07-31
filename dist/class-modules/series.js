@@ -1,15 +1,9 @@
-export default class Series {
+import ResourceAbstract from "./resource-abstract.js";
+export default class Series extends ResourceAbstract {
     constructor(title) {
+        super("Series");
         this.title = title;
-        this.resourceType = "Series";
         this.season = "";
-        this.downloadList = [];
-    }
-    getDownloadList() {
-        return this.downloadList;
-    }
-    setDownloadList(list) {
-        this.downloadList.push({ name: list[0], url: list[1] });
     }
     getSeason() {
         return this.season;

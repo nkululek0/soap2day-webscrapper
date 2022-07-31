@@ -1,35 +1,35 @@
-import https from "https";
 import fs, { existsSync, mkdirSync } from "fs";
+import https from "https";
 import logUpdate from "log-update";
-export default class Downloader {
-    constructor(url, fileName) {
+export default class downloader {
+    constructor(url, filename) {
         this.url = url;
-        this.fileName = fileName;
+        this.filename = filename;
     }
     download(consoleOutput) {
-        https.get(this.url, (response) => {
-            if (!existsSync("./downloads")) {
-                mkdirSync("./downloads");
-            }
-            let formattedFileName = this.fileNameFormat(this.fileName);
-            if (!existsSync(`./downloads/${formattedFileName}`)) {
-                let fileStream = fs.createWriteStream(`./downloads/${formattedFileName}`);
-                response.pipe(fileStream);
-                let fileLength = Number(response.headers["content-length"]);
-                response.on("data", () => {
-                    let writtenBytes = Number(fileStream.bytesWritten);
-                    let downloadStatus = this.userReadableFormat(fileLength, writtenBytes);
-                    logUpdate(`downloading: \n - ${consoleOutput}: ${downloadStatus}`);
+        if (!existsSync("./download")) {
+            mkdirSync("./download");
+        }
+        const FormatedFilename = this.formatFilename(this.filename);
+        if (!existsSync(`./download/${FormatedFilename}`)) {
+            https.get(this.url.href, (res) => {
+                const FileStream = fs.createWriteStream(`./download/${FormatedFilename}`);
+                res.pipe(FileStream);
+                const FileSize = Number(res.headers["content-length"]);
+                res.on("data", () => {
+                    let writtenBytes = Number(FileStream.bytesWritten);
+                    let downloadStatus = this.userReadableFormat(FileSize, writtenBytes);
+                    logUpdate(`downloading:\n - ${consoleOutput}: ${downloadStatus}`);
                 });
-                response.on("end", () => {
-                    fileStream.close();
+                res.on("end", () => {
+                    FileStream.close();
                     console.log(` - ${consoleOutput}: complete`);
                 });
-            }
-            else {
-                console.log("file already exists!");
-            }
-        });
+            });
+        }
+        else {
+            console.log(`${FormatedFilename} already exists!`);
+        }
     }
     userReadableFormat(totalBytes, writtenBytes) {
         let fileSize = String(totalBytes);
@@ -37,28 +37,28 @@ export default class Downloader {
         if (totalBytes > 999999999) {
             fileSize = fileSize.slice(0, 3);
             fileSize = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
-            return `${percentage} % of ${fileSize} GB`;
+            return `${percentage}% of ${fileSize}GB`;
         }
         if (totalBytes > 99999999) {
             fileSize = fileSize.slice(0, 5);
             fileSize = `${fileSize[0]}${fileSize[1]}${fileSize[2]},${fileSize[3]}${fileSize[4]}`;
-            return `${percentage} % of ${fileSize} MB`;
+            return `${percentage}% of ${fileSize}MB`;
         }
         if (totalBytes > 9999999) {
             fileSize = fileSize.slice(0, 4);
             fileSize = `${fileSize[0]}${fileSize[1]},${fileSize[2]}${fileSize[3]}`;
-            return `${percentage} % of ${fileSize} MB`;
+            return `${percentage}% of ${fileSize}MB`;
         }
         if (totalBytes > 999999) {
             fileSize = fileSize.slice(0, 3);
             fileSize = `${fileSize[0]},${fileSize[1]}${fileSize[2]}`;
-            return `${percentage} % of ${fileSize} MB`;
+            return `${percentage}% of ${fileSize}MB`;
         }
-        return `${percentage} %`;
+        return `${percentage}%`;
     }
-    fileNameFormat(file) {
-        return file.split(" ").map((word) => {
+    formatFilename(filename) {
+        return filename.split(" ").map((word) => {
             return word.replace(word[0], word[0].toLowerCase());
-        }).join("-");
+        }).join("");
     }
 }

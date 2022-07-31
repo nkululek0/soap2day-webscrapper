@@ -1,13 +1,7 @@
-export default class Movie {
+import ResourceAbstract from "./resource-abstract.js";
+export default class Movie extends ResourceAbstract {
     constructor(title) {
+        super("Movie");
         this.title = title;
-        this.resourceType = "Movie";
-        this.downloadList = [];
-    }
-    getDownloadList() {
-        return this.downloadList;
-    }
-    setDownloadList(list) {
-        this.downloadList.push({ name: list[0], url: list[1] });
     }
 }
