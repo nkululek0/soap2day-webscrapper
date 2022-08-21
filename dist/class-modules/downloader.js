@@ -19,9 +19,9 @@ export default class downloader {
                 res.on("data", () => {
                     let writtenBytes = Number(FileStream.bytesWritten);
                     let downloadStatus = this.userReadableFormat(FileSize, writtenBytes);
-                    logUpdate(`downloading:\n - ${consoleOutput}: ${downloadStatus}`);
+                    logUpdate(`downloading: \n - ${consoleOutput}: ${downloadStatus}`);
                 });
-                res.on("end", () => {
+                res.on("close", () => {
                     FileStream.close();
                     console.log(` - ${consoleOutput}: complete`);
                 });
@@ -59,6 +59,6 @@ export default class downloader {
     formatFilename(filename) {
         return filename.split(" ").map((word) => {
             return word.replace(word[0], word[0].toLowerCase());
-        }).join("");
+        }).join("-");
     }
 }

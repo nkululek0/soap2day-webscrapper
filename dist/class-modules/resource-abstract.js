@@ -4,7 +4,8 @@ export default class ResourceAbstract {
         this.downloadList = [];
     }
     setDownloadList(list) {
-        this.downloadList.push({ url: list[0], name: list[1] });
+        const [url, name] = list;
+        this.downloadList.push({ url, name });
     }
     getDownloadList() {
         return this.downloadList;

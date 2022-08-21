@@ -7,140 +7,123 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import puppeteer from "puppeteer-extra";
-import stealthPlugin from "puppeteer-extra-plugin-stealth";
-import readline from "readline";
 import Movie from "./class-modules/movie.js";
 import Series from "./class-modules/series.js";
 import Downloader from "./class-modules/downloader.js";
+import readline from "readline";
+import puppeteer from "puppeteer-extra";
+import stealthPlugin from "puppeteer-extra-plugin-stealth";
 puppeteer.use(stealthPlugin());
+let tabContent = [];
+let Resource;
+let resourceBuilder = { type: 0 };
+const ConsolePrompt = readline.createInterface({ input: process.stdin, output: process.stdout });
+var Options;
+(function (Options) {
+    Options[Options["null"] = 0] = "null";
+    Options[Options["MOVIE"] = 1] = "MOVIE";
+    Options[Options["SERIES"] = 2] = "SERIES";
+    Options[Options["SEASON"] = 3] = "SEASON";
+})(Options || (Options = {}));
+;
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    let tabContent = [];
-    let MainObject;
-    const consolePrompt = readline.createInterface({ input: process.stdin, output: process.stdout });
-    let options;
-    (function (options) {
-        options[options["movie"] = 0] = "movie";
-        options[options["series"] = 1] = "series";
-        options[options["season"] = 2] = "season";
-    })(options || (options = {}));
-    ;
-    let userInput = 0;
-    consolePrompt.question("1.Movie\n2.Series\nSelect Option: ", (answer) => {
-        if (answer === "1") {
-            userInput = options.movie;
-        }
-        else if (answer === "2") {
-            userInput = options.series;
-        }
-        else {
-            console.log("invalid input");
-        }
-        consolePrompt.question("\nSearch: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
-            const browser = yield puppeteer.launch({ headless: false, executablePath: "/usr/bin/google-chrome" });
-            const tab = yield browser.newPage();
-            yield tab.goto("https://soap2day.to/enter.html");
-            yield tab.waitForTimeout(1500);
-            yield tab.click("#btnhome");
-            yield tab.waitForNavigation();
-            if (userInput === options.movie) {
-                MainObject = new Movie(answer);
-            }
-            else if (userInput === options.series) {
-                MainObject = new Series(answer);
-            }
-            yield search(MainObject.title, tab);
-            yield setTabContent(MainObject.resourceType, tab);
-            yield tab.waitForTimeout(1000).then(() => {
-                console.log("\nDonwload Options:");
-                tabContent.map((item, index) => {
-                    console.log(`${++index}.${item.name}`);
-                });
-                consolePrompt.question("\nSelect Option: ", (answer) => __awaiter(void 0, void 0, void 0, function* () {
-                    const numAnswer = Number(answer) - 1;
-                    if (userInput === options.movie) {
-                        MainObject.title = tabContent[numAnswer].name;
-                        yield tab.goto(tabContent[numAnswer].url);
-                        yield tab.waitForSelector("video");
-                        const downLoadSrc = yield tab.$eval("video", (video) => {
-                            return video.src;
-                        });
-                        const isValidUrl = downLoadSrc.includes("s2dmax");
-                        if (isValidUrl) {
-                            MainObject.setDownloadList([tabContent[numAnswer].name, downLoadSrc]);
-                            const MovieDownloader = new Downloader(MainObject.getDownloadList()[0].url, `${MainObject.getDownloadList()[0].name}.mp4`);
-                            MovieDownloader.download(MainObject.getDownloadList()[0].name);
+    const Browser = yield puppeteer.launch({
+        headless: false,
+        executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    });
+    const Tab = yield Browser.newPage();
+    yield Tab.goto("https://soap2day.to/enter.html");
+    yield Tab.waitForTimeout(1500);
+    yield Tab.click("#btnhome");
+    yield Tab.waitForNavigation();
+    selectQuestion(1);
+    // main program that asks user questions
+    function selectQuestion(option) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const isWithinRange = option >= 1 && option <= 3;
+            if (isWithinRange) {
+                if (option === 1) {
+                    ConsolePrompt.question("\nSearch: ", (search) => __awaiter(this, void 0, void 0, function* () {
+                        yield Tab.type("#txtSearch", search);
+                        yield Tab.click("#btnSearch");
+                        yield Tab.waitForSelector(".no-padding");
+                        selectQuestion(2);
+                    }));
+                }
+                if (option === 2) {
+                    ConsolePrompt.question("\n1.Movie\n2.Series\n\nSelect Option: ", (resource) => {
+                        const isValidOption = resource === "1" || resource == "2";
+                        if (!isValidOption) {
+                            console.log("invalid option");
+                            selectQuestion(2);
+                        }
+                        else if (isValidOption) {
+                            resourceBuilder.type = Number(resource);
+                            selectQuestion(3);
+                        }
+                    });
+                }
+                if (option === 3) {
+                    if (resourceBuilder.type === Options.MOVIE) {
+                        yield setTabContent("Movie", Tab);
+                    }
+                    else if (resourceBuilder.type === Options.SERIES) {
+                        yield setTabContent("Series", Tab);
+                    }
+                    else if (resourceBuilder.type === Options.SEASON) {
+                        yield setTabContent("Season", Tab);
+                    }
+                    if (tabContent[0].name === "no match found") {
+                        console.log("no match found in that category");
+                        selectQuestion(2);
+                    }
+                    else {
+                        console.log("\n");
+                        tabContent.map(({ name }, index) => { console.log(`${++index}.${name}`); });
+                    }
+                    ConsolePrompt.question("\nSelect Option: ", (answer) => __awaiter(this, void 0, void 0, function* () {
+                        const isValidOption = Number(answer) >= 1 && Number(answer) <= tabContent.length;
+                        if (!isValidOption) {
+                            console.log("invalid input");
+                            selectQuestion(3);
                         }
                         else {
-                            console.log("no download url available!");
+                            // this destructures the name and url within the tabContent from the selected options 
+                            const { url, name } = tabContent[Number(answer) - 1];
+                            if (resourceBuilder.type === Options.MOVIE) {
+                                Resource = new Movie(name);
+                                Resource.setDownloadList([url, name]);
+                                yield launchDownloader(Resource.resourceType);
+                            }
+                            else if (resourceBuilder.type === Options.SERIES) {
+                                Resource = new Series(name);
+                                tabContent.map(({ url, name }) => { Resource.setDownloadList([url, name]); });
+                            }
                         }
-                        // await browser.close();
-                    }
-                    else if (userInput === options.series) {
-                        MainObject.title = tabContent[numAnswer].name.split(" ").slice(0, -1).join(" ");
-                        yield tab.goto(tabContent[numAnswer].url);
-                        const seasonList = yield tab.$$("div.alert-info-ex");
-                        seasonList.map((seasonOption, index) => {
-                            console.log(`${++index}.Season ${index}`);
-                        });
-                        consolePrompt.question("\nSelect Season: ", (season) => __awaiter(void 0, void 0, void 0, function* () {
-                            MainObject.setSeason(`Season ${season}`);
-                            yield setTabContent(`Season ${season}`, tab);
-                            yield tab.waitForTimeout(1000).then(() => {
-                                tabContent.reverse();
-                                tabContent.map((episode) => {
-                                    console.log(episode.name);
-                                });
-                            });
-                            consolePrompt.question("\n1.Download All | 2.Select: ", (downloadOption) => {
-                                if (downloadOption === "1") {
-                                }
-                                else if (downloadOption === "2") {
-                                    consolePrompt.question("Download From Episode: ", (answer) => {
-                                        const startEpisode = Number(answer) - 1;
-                                        consolePrompt.question("Stop Download at Episode: ", (answer) => {
-                                            const endEpisode = Number(answer);
-                                            consolePrompt.question("Exclude Episodes: ", (answer) => {
-                                                tabContent = tabContent.slice(startEpisode, endEpisode);
-                                                const excludeEpisodes = answer.split(", ").map((number) => Number(number) - 1);
-                                                tabContent.map((episode, index) => {
-                                                    if (!excludeEpisodes.includes(index)) {
-                                                        MainObject.setDownloadList([episode.name, episode.url]);
-                                                    }
-                                                });
-                                                MainObject.getDownloadList().map((episode) => __awaiter(void 0, void 0, void 0, function* () {
-                                                    const downloadPage = yield browser.newPage();
-                                                    yield downloadPage.goto(episode.url);
-                                                    yield downloadPage.waitForSelector("video");
-                                                    const downLoadSrc = yield downloadPage.$eval("video", (video) => {
-                                                        return video.src;
-                                                    });
-                                                    const isValidUrl = downLoadSrc.includes("s2dmax");
-                                                    if (isValidUrl) {
-                                                        const SeriesDownloader = new Downloader(downLoadSrc, `${episode.name}.mp4`);
-                                                        SeriesDownloader.download(`${MainObject.title}, ${MainObject.getSeason()}, Episode ${episode.name.slice(0, episode.name.indexOf("."))}`);
-                                                    }
-                                                    else {
-                                                        console.log("no download url available!");
-                                                    }
-                                                }));
-                                            });
-                                        });
-                                    });
-                                }
-                            });
-                        }));
-                    }
-                }));
-            });
-        }));
-    });
-    // searches user console input
-    function search(searchInput, tab) {
+                    }));
+                }
+            }
+        });
+    }
+    // downloads content in downloadList based off of resource type
+    function launchDownloader(resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield tab.type("#txtSearch", searchInput);
-            yield tab.click("#btnSearch");
-            yield tab.waitForSelector(".no-padding");
+            const isMovie = resource === "Movie";
+            if (isMovie) {
+                const { url } = Resource.getDownloadList()[0];
+                executeDownload(url, Resource);
+            }
+            function executeDownload(url, resource) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const DownloadPage = yield Browser.newPage();
+                    yield DownloadPage.goto(url.href);
+                    yield DownloadPage.waitForSelector("video");
+                    const DownloadLink = yield DownloadPage.$eval("video", video => video.src);
+                    const ResourceTitle = resource.title;
+                    const MovieDownloader = new Downloader(new URL(DownloadLink), `${ResourceTitle}.mp4`);
+                    MovieDownloader.download(ResourceTitle);
+                });
+            }
         });
     }
     // populates tabContent based on the content of the current page and type
@@ -159,7 +142,7 @@ puppeteer.use(stealthPlugin());
             }
             else if (resourceType === "Series") {
                 const isAnchorElement = yield resourceTypeSection[1].$(".no-padding a");
-                if (isAnchorElement == null) {
+                if (isAnchorElement === null) {
                     yield formatTabContent("no match", null);
                 }
                 else {
@@ -174,6 +157,7 @@ puppeteer.use(stealthPlugin());
             }
         });
     }
+    ;
     // does the formating for setContent so that setContent is DRY
     function formatTabContent(match, selector) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -198,7 +182,7 @@ puppeteer.use(stealthPlugin());
                         });
                     });
                     content.map((item) => {
-                        tabContent.push({ name: item[0], url: item[1] });
+                        tabContent.push({ name: item[0], url: new URL(item[1]) });
                     });
                 });
             }
